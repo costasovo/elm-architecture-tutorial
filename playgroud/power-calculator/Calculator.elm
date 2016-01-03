@@ -2,7 +2,8 @@ module Calculator where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick)
+import Html.Events exposing (..)
+import String exposing (..)
 
 
 -- MODEL
@@ -24,7 +25,10 @@ init =
 
 -- UPDATE
 
-type Action = Compute | Reset
+type Action 
+    = Compute 
+    | Reset
+    | NewArea (Result String Int)
 
 update : Action -> Model -> Model
 update action model =
@@ -37,6 +41,15 @@ update action model =
     Reset ->
       init
 
+    NewArea (areaResult) ->
+      case areaResult of
+        Ok value ->
+          { model |
+              area = value
+          }
+        Err msg ->
+          model
+
 
 -- VIEW
 
@@ -44,7 +57,10 @@ view : Signal.Address Action -> Model -> Html
 view address model =
   div []
     [ p [ resultStyle ] [ text (toString model.result) ]
-    , input [ value (toString model.area)] []
+    , input 
+      [ value (toString model.area)
+      , on "input" targetValue (\str -> Signal.message address (NewArea (String.toInt str)))
+      ] []
     , select []
       [ option [ value "20+" ] [ text "Dum nad 20 let"]
       , option [ value "20-" ] [ text "Dum do 20 let"]
